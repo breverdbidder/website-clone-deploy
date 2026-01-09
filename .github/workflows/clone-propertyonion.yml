@@ -1,0 +1,125 @@
+name: Clone PropertyOnion Website
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Website URL to clone'
+        required: true
+        default: 'https://propertyonion.com'
+
+jobs:
+  clone:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: |
+          npm install -g playwright
+          npm install cheerio fs-extra
+          playwright install chromium
+      
+      - name: Clone website
+        run: |
+          mkdir -p cloned-sites/propertyonion
+          cd cloned-sites/propertyonion
+          
+          node << 'CLONE_JS'
+          const { chromium } = require('playwright');
+          const fs = require('fs-extra');
+          const path = require('path');
+          
+          (async () => {
+            console.log('🚀 Cloning PropertyOnion.com...');
+            
+            const browser = await chromium.launch();
+            const page = await browser.newPage();
+            
+            const baseUrl = 'https://propertyonion.com';
+            const outputDir = process.cwd();
+            
+            // Create directories
+            ['pages', 'screenshots', 'assets'].forEach(dir => {
+              fs.ensureDirSync(path.join(outputDir, dir));
+            });
+            
+            // Clone pages
+            const pages = ['/', '/tour/what_we_are', '/member/upgrade_join'];
+            
+            for (const pagePath of pages) {
+              const url = baseUrl + pagePath;
+              const name = pagePath.replace(/\//g, '_') || 'home';
+              
+              console.log(`📄 ${url}`);
+              
+              await page.goto(url, { waitUntil: 'networkidle' });
+              const html = await page.content();
+              
+              fs.writeFileSync(
+                path.join(outputDir, 'pages', `${name}.html`),
+                html
+              );
+              
+              await page.screenshot({
+                path: path.join(outputDir, 'screenshots', `${name}.png`),
+                fullPage: true
+              });
+            }
+            
+            // Extract design system
+            await page.goto(baseUrl);
+            
+            const colors = await page.evaluate(() => {
+              const colorSet = new Set();
+              document.querySelectorAll('*').forEach(el => {
+                const styles = getComputedStyle(el);
+                ['color', 'backgroundColor'].forEach(prop => {
+                  const val = styles[prop];
+                  if (val && val !== 'rgba(0, 0, 0, 0)') colorSet.add(val);
+                });
+              });
+              return Array.from(colorSet).slice(0, 50);
+            });
+            
+            const fonts = await page.evaluate(() => {
+              const fontSet = new Set();
+              document.querySelectorAll('*').forEach(el => {
+                const font = getComputedStyle(el).fontFamily;
+                if (font) fontSet.add(font);
+              });
+              return Array.from(fontSet);
+            });
+            
+            fs.writeFileSync(
+              path.join(outputDir, 'design-system.json'),
+              JSON.stringify({ colors, fonts, baseUrl }, null, 2)
+            );
+            
+            console.log('✅ Clone complete');
+            
+            await browser.close();
+          })();
+          CLONE_JS
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: propertyonion-clone
+          path: cloned-sites/propertyonion/
+          retention-days: 90
+      
+      - name: Commit to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add cloned-sites/propertyonion/
+          git commit -m "Clone PropertyOnion website - $(date)" || echo "No changes"
+          git push || echo "Push failed"
