@@ -1,0 +1,58 @@
+name: Clone Website
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'URL to clone (e.g. https://testfit.io)'
+        required: true
+        default: 'https://testfit.io'
+      
+jobs:
+  clone:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: |
+          npm install playwright cheerio prettier
+          npx playwright install chromium
+      
+      - name: Clone website
+        run: |
+          node scripts/clone-website.js "${{ github.event.inputs.url }}"
+      
+      - name: Generate summary
+        id: summary
+        run: |
+          if [ -d "cloned-sites" ]; then
+            DOMAIN=$(echo "${{ github.event.inputs.url }}" | sed 's|https\?://||' | cut -d'/' -f1)
+            if [ -f "cloned-sites/$DOMAIN/summary.json" ]; then
+              echo "✅ Clone successful"
+              cat "cloned-sites/$DOMAIN/summary.json"
+            fi
+          fi
+      
+      - name: Commit results
+        run: |
+          git config user.name "Claude AI Bot"
+          git config user.email "claude@biddeed.ai"
+          git add cloned-sites/ || true
+          git diff --quiet && git diff --staged --quiet || git commit -m "feat: Clone ${{ github.event.inputs.url }}"
+          git push || true
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloned-website
+          path: cloned-sites/
+          retention-days: 30
+
