@@ -1,0 +1,47 @@
+{
+  "header": {
+    "type": "header",
+    "length": 341,
+    "has_nav": false,
+    "link_count": 1
+  },
+  "forms": {
+    "count": 1,
+    "types": [
+      "contact"
+    ]
+  },
+  "colors": [
+    "#00adef",
+    "#607d8b",
+    "#111",
+    "#388e3c",
+    "#d0d3d9",
+    "#000000",
+    "#455a64",
+    "#03a9f4",
+    "#04781c",
+    "#666",
+    "#495057",
+    "#ac0000",
+    "#000",
+    "#2196f3",
+    "#018502",
+    "#cccfde",
+    "#dbf1f9",
+    "#444",
+    "#fff",
+    "#034da2"
+  ],
+  "ctas": [
+    "Login",
+    "Sign Up"
+  ],
+  "javascript": [
+    "Bootstrap",
+    "React"
+  ],
+  "meta": {
+    "description": "Houses for 28% - 70% off Retail Prices! County Foreclosure, Tax Deed &amp; Wholesale deals in your l"
+  }
+}
