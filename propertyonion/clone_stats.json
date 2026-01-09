@@ -1,0 +1,36 @@
+{
+  "cloned_at": "2026-01-09T19:01:04.466954",
+  "pages": [
+    {
+      "name": "home",
+      "url": "https://propertyonion.com/",
+      "size": 1106168,
+      "status": "success"
+    },
+    {
+      "name": "tour",
+      "url": "https://propertyonion.com/tour/what_we_are",
+      "size": 4197,
+      "status": "success"
+    },
+    {
+      "name": "pricing",
+      "url": "https://propertyonion.com/member/upgrade_join",
+      "status": "error_503"
+    },
+    {
+      "name": "education",
+      "url": "https://propertyonion.com/education/",
+      "size": 75674,
+      "status": "success"
+    },
+    {
+      "name": "faq",
+      "url": "https://propertyonion.com/faq",
+      "size": 4197,
+      "status": "success"
+    }
+  ],
+  "total_pages": 5,
+  "successful": 4
+}
